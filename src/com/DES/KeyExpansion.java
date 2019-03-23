@@ -1,17 +1,15 @@
 package com.DES;
 
+import java.util.Arrays;
+
 public class KeyExpansion {
     public static void main(String[] args) {
         String binaryKeys = "00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001";
         String[] keys = binaryKeys.split(" ");
 
         keys = permutedChoice1(keys);
-        for (String s :
-                keys) {
-            System.out.printf("%s ",s);
-            //Should print 1111000 0110011 0010101 0101111 0101010 1011001 1001111 0001111
-            //for some reason prints out same output be when comparing gives false
-        }
+        //check if PC1 is working correctly
+        System.out.println(Arrays.equals(keys,"1111000 0110011 0010101 0101111 0101010 1011001 1001111 0001111".split(" ")));
     }
 
     public static String[] permutedChoice1(String[] keys) {

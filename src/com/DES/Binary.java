@@ -35,4 +35,5 @@ public class Binary {
         }
         return string;
     }
+
 }
