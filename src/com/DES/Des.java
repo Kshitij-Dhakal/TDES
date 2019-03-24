@@ -1,6 +1,7 @@
 package com.DES;
 
 public class Des {
+
     public static void roundFunction(String r, String key) {
         String s = expansionPermutationBox(r);
     }
@@ -40,6 +41,12 @@ public class Des {
     }
 
     public static void main(String[] args) {
+        String[] keys = KeyExpansion.expandKeys("00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001");
+/*
+        for (int i = 0; i < 16; i++) {
+            System.out.println("K" + (i + 1) + "\t=\t" + keys[i]);
+        }
+*/
     }
 
 }

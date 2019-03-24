@@ -1,5 +1,17 @@
 package com.DES;
 
+class BinaryException extends Exception {
+
+    /**
+     * Any exceptions in Binary Class
+     *
+     * @param message Exception Message
+     */
+    public BinaryException(String message) {
+        super(message);
+    }
+}
+
 public class Binary {
     /**
      * Convert given text into binary without creating any binary object
@@ -34,6 +46,41 @@ public class Binary {
 
         }
         return string;
+    }
+
+    /**
+     * Move each bit one place to the left, except for the first bit, which is cycled to the end of the block.
+     *
+     * @param binaryKeys 8 bit binary stream to be left shifted.
+     * @return 8 bit binary stream obtained after left shifted.
+     */
+    private static String leftShift(String binaryKeys) {
+        String ret = "";
+        ret += binaryKeys.substring(1);
+        ret += binaryKeys.charAt(0);
+        return ret;
+    }
+
+    /**
+     * Move each bit n place to the left, except for the first bit, which is cycled to the end of the block.
+     *
+     * @param binaryKeys Stream of binary keys
+     * @param n          number of places to be shifted
+     * @return binaryKeys after applying left shift by n places
+     */
+    public static String leftShift(String binaryKeys, int n) {
+        binaryKeys = binaryKeys.replaceAll(" ", "");
+        for (int i = 0; i < n; i++) {
+            binaryKeys = leftShift(binaryKeys);
+        }
+        String ret = "";
+        for (int i = 0; i < binaryKeys.length(); i++) {
+            if (i % 7 == 0 && i != 0) {
+                ret += " ";
+            }
+            ret += binaryKeys.charAt(i);
+        }
+        return ret;
     }
 
 }
