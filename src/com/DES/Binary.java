@@ -83,9 +83,27 @@ public class Binary {
         return ret;
     }
 
-    public static String XOR(String lm, String rm){
-        //TODO function for XOR
-        return null;
+    public static String XOR(String lm, String rm) {
+        //TODO test XOR
+/*
+        if (lm.length() != rm.length()) {
+            throw new BinaryException("XOR operators must be of same lenghts");
+        }
+*/
+        String ret = "";
+        lm = lm.replaceAll(" ", "");
+        rm = rm.replaceAll(" ", "");
+        for (int i = 0; i < lm.length(); i++) {
+            if (lm.charAt(i) == rm.charAt(i)) {
+                ret += 0;
+            } else {
+                ret += 1;
+            }
+            if (i % 6 == 0) {
+                ret += " ";
+            }
+        }
+        return ret;
     }
 
 }
