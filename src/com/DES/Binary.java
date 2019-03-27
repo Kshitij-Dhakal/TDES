@@ -83,4 +83,9 @@ public class Binary {
         return ret;
     }
 
+    public static String XOR(String lm, String rm){
+        //TODO function for XOR
+        return null;
+    }
+
 }
