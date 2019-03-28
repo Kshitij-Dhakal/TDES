@@ -68,7 +68,10 @@ public class Des {
         for (int i = 0; i < retArr.length; i++) {
             retArr[i] += substitutionBox(retArr[i], i);
         }
-        return null;
+        for (int i = 0; i < retArr.length; i++) {
+            ret += retArr[i];
+        }
+        return ret;
     }
 
     /**
@@ -100,25 +103,28 @@ public class Des {
      * @return 48 bit after applying expansion permutation to the m
      */
     private static String expansionPermutationBox(String m) {
+        //TODO Expansion test partially complete
         String ret = "";
+        m = m.replace(" ", "");
         for (int i = 0; i < E.length; i++) {
-            ret += m.charAt(E[i] - 1);
-            if (i % 8 == 0) {
+            if (i % 6 == 0 && i != 0) {
                 ret += " ";
             }
+            ret += m.charAt(E[i] - 1);
         }
         return ret;
     }
 
     private static String substitutionBox(String location, int i) {
-        //TODO test substitution box
+        //TODO test substitution box Partially Tested
         String rowS = "";
-        rowS += location.charAt(0) + location.charAt(5);
+        rowS += location.charAt(0) + "" + location.charAt(5);
         String colS = "";
-        colS += location.substring(1, 4);
+        colS += location.substring(1, 5);
         int row = Integer.parseInt(rowS, 2);
         int col = Integer.parseInt(colS, 2);
-        return String.format("%4s", Integer.toBinaryString(S[i][row][col])).replace(' ', '0');
+//        return null;
+        return S[i][row][col] + "";
     }
 
     public static void main(String[] args) {
@@ -127,19 +133,27 @@ public class Des {
         m = initialPermutation(m);
         String[] L = new String[17];
         String[] R = new String[17];
-        L[0] = m.substring(0, m.length() / 2 - 1);
-        R[0] = m.substring(m.length() / 2);
-        System.out.println(L[0]);
-        System.out.println(R[0]);
+        L[0] = m.substring(0, m.length() / 2 - 1).replace(" ","");
+        R[0] = m.substring(m.length() / 2).replace(" ","");
+//        System.out.println(L[0]+"\t"+R[0]);
         for (int i = 1; i < 17; i++) {
+            L[i]=R[i-1];
+            R[i] = Binary.XOR(L[i - 1], roundFunction(R[i - 1], keys[i-1]));
         }
+//        roundFunction(R[0], keys[1]);
+        printLandR(L, R);
 
 /*
         for (int i = 0; i < 16; i++) {
             System.out.println("K" + (i + 1) + "\t=\t" + keys[i]);
         }
 */
-        System.out.println(S.length);
+    }
+
+    private static void printLandR(String[] l, String[] r) {
+        for (int i = 0; i < l.length; i++) {
+            System.out.println(l[i] + "\t" + r[i]);
+        }
     }
 
 }

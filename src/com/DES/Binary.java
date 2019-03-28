@@ -95,12 +95,9 @@ public class Binary {
         rm = rm.replaceAll(" ", "");
         for (int i = 0; i < lm.length(); i++) {
             if (lm.charAt(i) == rm.charAt(i)) {
-                ret += 0;
+                ret += "0";
             } else {
-                ret += 1;
-            }
-            if (i % 6 == 0) {
-                ret += " ";
+                ret += "1";
             }
         }
         return ret;
