@@ -75,10 +75,10 @@ public class Binary {
         }
         String ret = "";
         for (int i = 0; i < binaryKeys.length(); i++) {
-            if (i % 7 == 0 && i != 0) {
+            ret += binaryKeys.charAt(i);
+            if ((i + 1) % 8 == 0) {
                 ret += " ";
             }
-            ret += binaryKeys.charAt(i);
         }
         return ret;
     }
@@ -94,13 +94,13 @@ public class Binary {
         lm = lm.replaceAll(" ", "");
         rm = rm.replaceAll(" ", "");
         for (int i = 0; i < lm.length(); i++) {
-            if (i % 6 == 0 && i != 0) {
-                ret += " ";
-            }
             if (lm.charAt(i) == rm.charAt(i)) {
                 ret += "0";
             } else {
                 ret += "1";
+            }
+            if ((i + 1) % 6 == 0) {
+                ret += " ";
             }
         }
         return ret;

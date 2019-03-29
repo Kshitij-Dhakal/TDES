@@ -4,6 +4,10 @@ public class Des {
     //All the following constants for permutation have index starting from 1..n instead of 0..n-1
     //So when using these constants there should be -1 added to them
     //Except for S[0..7]
+    private static final int permutation_IP = 8;
+    private static final int permutation_E = 6;
+    private static final int permutation_P = -1;
+    private static final int permutation_F = 8;
     private static final int[] IP = {58, 50, 42, 34, 26, 18, 10, 2,
             60, 52, 44, 36, 28, 20, 12, 4,
             62, 54, 46, 38, 30, 22, 14, 6,
@@ -80,7 +84,8 @@ public class Des {
      */
     private static String roundFunction(String r, String key) {
         //Test Complete
-        r = expansionPermutationBox(r);
+        //apply expansion permutation of round function
+        r = applyPermutation(r, E, permutation_E);
         String xor = Binary.XOR(r, key);
         String[] retArr = xor.split(" ");
         for (int i = 0; i < retArr.length; i++) {
@@ -91,54 +96,28 @@ public class Des {
                 retArr) {
             ret += s;
         }
-        return permutationBox(ret);
+        //apply permutation box of round function
+        return applyPermutation(ret, P, permutation_P);
     }
 
     /**
-     * Initial Permutation before applying round function for 16 rounds.
+     * The input message is permuted according to the permutationTable.
      *
-     * @param message 64 bit message block
-     * @return 64 bit binary block after applying initial permutation
+     * @param message          Input bits
+     * @param permutationTable Permutation Table
+     * @param spacing          (misc) For adding spacing at regular interval in return value. -1 if no spacing required.
+     * @return the value obtained after permuting message using permutationTable
      */
-    private static String initialPermutation(String message) {
+    private static String applyPermutation(String message, int[] permutationTable, int spacing) {
         String ret = "";
         message = message.replaceAll(" ", "");
-        for (int i = 0; i < 64; i++) {
-            ret += message.charAt(IP[i] - 1);
-            if ((i + 1) % 8 == 0) {
-                ret += " ";
+        for (int i = 0; i < permutationTable.length; i++) {
+            ret += message.charAt(permutationTable[i] - 1);
+            if (spacing != -1) {
+                if ((i + 1) % spacing == 0) {
+                    ret += " ";
+                }
             }
-        }
-        return ret;
-    }
-
-    private static String finalPermutation(String message) {
-        String ret = "";
-        message = message.replaceAll(" ", "");
-        for (int i = 0; i < F.length; i++) {
-            ret += message.charAt(F[i] - 1);
-            if ((i + 1) % 8 == 0) {
-                ret += " ";
-            }
-        }
-        return ret;
-    }
-
-    /**
-     * Expansion Block e used in round function f
-     *
-     * @param m 32 bit of the right half of the message block
-     * @return 48 bit after applying expansion permutation to the m
-     */
-    private static String expansionPermutationBox(String m) {
-        //Test Complete
-        String ret = "";
-        m = m.replace(" ", "");
-        for (int i = 0; i < E.length; i++) {
-            if (i % 6 == 0 && i != 0) {
-                ret += " ";
-            }
-            ret += m.charAt(E[i] - 1);
         }
         return ret;
     }
@@ -163,24 +142,11 @@ public class Des {
         return String.format("%4s", Integer.toBinaryString(S[i][row][col])).replace(' ', '0');
     }
 
-    /**
-     * Permutation box p used in round function f
-     *
-     * @param s 32 bits input
-     * @return 32 bits after permutation
-     */
-    private static String permutationBox(String s) {
-        String ret = "";
-        for (int i = 0; i < s.length(); i++) {
-            ret += s.charAt(P[i] - 1);
-        }
-        return ret;
-    }
-
     public static void main(String[] args) {
         String[] keys = KeyExpansion.expandKeys("00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001");
         String m = "0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111";
-        m = initialPermutation(m);
+        //Applying Initial Permutation
+        m = applyPermutation(m, IP, permutation_IP);
         String L = "";
         String R = "";
         L = m.substring(0, m.length() / 2 - 1).replace(" ", "");
@@ -195,7 +161,9 @@ public class Des {
             R = Binary.XOR(temp, roundFunction(R, keys[i])).replaceAll(" ", "");
         }
         String ret = R + L;
-        System.out.println(finalPermutation(ret));
+        System.out.println("Expected :\t10000101 11101000 00010011 01010100 00001111 00001010 10110100 00000101");
+        ret = applyPermutation(ret, F, permutation_F);
+        System.out.println("Result :\t" + ret);
 /*
         for (int i = 0; i < ret.length(); i++) {
             if (i % 8 == 0 && i != 0) {
