@@ -84,7 +84,7 @@ public class Binary {
     }
 
     public static String XOR(String lm, String rm) {
-        //TODO test XOR
+        //Test Complete
 /*
         if (lm.length() != rm.length()) {
             throw new BinaryException("XOR operators must be of same lenghts");
@@ -94,6 +94,9 @@ public class Binary {
         lm = lm.replaceAll(" ", "");
         rm = rm.replaceAll(" ", "");
         for (int i = 0; i < lm.length(); i++) {
+            if (i % 6 == 0 && i != 0) {
+                ret += " ";
+            }
             if (lm.charAt(i) == rm.charAt(i)) {
                 ret += "0";
             } else {
