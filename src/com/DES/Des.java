@@ -134,30 +134,28 @@ public class Des {
         //converting rowS->row and colS->col (Binary to Integer)
         int row = Integer.parseInt(rowS, 2);
         int col = Integer.parseInt(colS, 2);
-//        return null;
         return String.format("%4s", Integer.toBinaryString(S[i][row][col])).replace(' ', '0');
     }
 
-    public static void main(String[] args) {
-        DES perform = DES.ENCRYPTION;
-        String[] keys = KeyExpansion.expandKeys("00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001");
-        String m = "0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111";
-//        performCheck(perform, keys, m);
-    }
-
 /*
-    private static void performCheck(DES perform, String[] keys, String m) {
+    private static void performCheck(PERFORM perform, String[] keys, String m) {
         String ret = encrypt(perform, keys, m);
         System.out.println("Encrypt");
         System.out.println("Expected :\t10000101 11101000 00010011 01010100 00001111 00001010 10110100 00000101");
         System.out.println("Result :\t" + ret);
-        perform = DES.DECRYPTION;
+        perform = PERFORM.DECRYPTION;
         ret = encrypt(perform, keys, ret);
         System.out.println("Decrypt");
         System.out.println("Expected :\t00000001 00100011 01000101 01100111 10001001 10101011 11001101 11101111");
         System.out.println("Result :\t" + ret);
     }
 */
+
+    public static void main(String[] args) {
+        PERFORM perform = PERFORM.ENCRYPTION;
+        String[] keys = KeyExpansion.expandKeys("00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001");
+        String m = "0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111";
+    }
 
     /**
      * Perform Encryption or Decryption
@@ -167,17 +165,13 @@ public class Des {
      * @param message message
      * @return Encrypted or Decrypted message using provided keys
      */
-    private static String encrypt(DES perform, String[] keys, String message) {
+    private static String encrypt(PERFORM perform, String[] keys, String message) {
         //Applying Initial Permutation
         message = applyPermutation(message, IP, PERMUTATION.IP);
         String L = "";
         String R = "";
         L = message.substring(0, message.length() / 2 - 1).replace(" ", "");
         R = message.substring(message.length() / 2).replace(" ", "");
-//        System.out.println(L + "\t" + R);
-//        System.out.println("key :\t" + keys[0]);
-//        System.out.println(roundFunction(R, keys[1]));
-//        System.out.println(keys.length);
         switch (perform) {
             case ENCRYPTION:
                 for (int i = 0; i < 16; i++) {
@@ -200,7 +194,7 @@ public class Des {
         return ret;
     }
 
-    enum PERMUTATION {
+    private enum PERMUTATION {
         IP(8),
         E(6),
         P(-1),
@@ -213,9 +207,9 @@ public class Des {
         }
     }
 
-    enum DES {
+    public enum PERFORM {
         ENCRYPTION,
-        DECRYPTION;
+        DECRYPTION
     }
 
 }
