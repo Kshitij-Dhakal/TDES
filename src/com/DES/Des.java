@@ -4,10 +4,6 @@ public class Des {
     //All the following constants for permutation have index starting from 1..n instead of 0..n-1
     //So when using these constants there should be -1 added to them
     //Except for S[0..7]
-    private static final int permutation_IP = 8;
-    private static final int permutation_E = 6;
-    private static final int permutation_P = -1;
-    private static final int permutation_F = 8;
     private static final int[] IP = {58, 50, 42, 34, 26, 18, 10, 2,
             60, 52, 44, 36, 28, 20, 12, 4,
             62, 54, 46, 38, 30, 22, 14, 6,
@@ -85,7 +81,7 @@ public class Des {
     private static String roundFunction(String r, String key) {
         //Test Complete
         //apply expansion permutation of round function
-        r = applyPermutation(r, E, permutation_E);
+        r = applyPermutation(r, E, PERMUTATION.E);
         String xor = Binary.XOR(r, key);
         String[] retArr = xor.split(" ");
         for (int i = 0; i < retArr.length; i++) {
@@ -97,7 +93,7 @@ public class Des {
             ret += s;
         }
         //apply permutation box of round function
-        return applyPermutation(ret, P, permutation_P);
+        return applyPermutation(ret, P, PERMUTATION.P);
     }
 
     /**
@@ -108,13 +104,13 @@ public class Des {
      * @param spacing          (misc) For adding spacing at regular interval in return value. -1 if no spacing required.
      * @return the value obtained after permuting message using permutationTable
      */
-    private static String applyPermutation(String message, int[] permutationTable, int spacing) {
+    private static String applyPermutation(String message, int[] permutationTable, PERMUTATION spacing) {
         String ret = "";
         message = message.replaceAll(" ", "");
         for (int i = 0; i < permutationTable.length; i++) {
             ret += message.charAt(permutationTable[i] - 1);
-            if (spacing != -1) {
-                if ((i + 1) % spacing == 0) {
+            if (spacing.numValue != -1) {
+                if ((i + 1) % spacing.numValue == 0) {
                     ret += " ";
                 }
             }
@@ -143,35 +139,83 @@ public class Des {
     }
 
     public static void main(String[] args) {
+        DES perform = DES.ENCRYPTION;
         String[] keys = KeyExpansion.expandKeys("00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001");
         String m = "0000 0001 0010 0011 0100 0101 0110 0111 1000 1001 1010 1011 1100 1101 1110 1111";
+//        performCheck(perform, keys, m);
+    }
+
+/*
+    private static void performCheck(DES perform, String[] keys, String m) {
+        String ret = encrypt(perform, keys, m);
+        System.out.println("Encrypt");
+        System.out.println("Expected :\t10000101 11101000 00010011 01010100 00001111 00001010 10110100 00000101");
+        System.out.println("Result :\t" + ret);
+        perform = DES.DECRYPTION;
+        ret = encrypt(perform, keys, ret);
+        System.out.println("Decrypt");
+        System.out.println("Expected :\t00000001 00100011 01000101 01100111 10001001 10101011 11001101 11101111");
+        System.out.println("Result :\t" + ret);
+    }
+*/
+
+    /**
+     * Perform Encryption or Decryption
+     *
+     * @param perform Specifies whether to perform encryption or decryption
+     * @param keys    expanded keys
+     * @param message message
+     * @return Encrypted or Decrypted message using provided keys
+     */
+    private static String encrypt(DES perform, String[] keys, String message) {
         //Applying Initial Permutation
-        m = applyPermutation(m, IP, permutation_IP);
+        message = applyPermutation(message, IP, PERMUTATION.IP);
         String L = "";
         String R = "";
-        L = m.substring(0, m.length() / 2 - 1).replace(" ", "");
-        R = m.substring(m.length() / 2).replace(" ", "");
+        L = message.substring(0, message.length() / 2 - 1).replace(" ", "");
+        R = message.substring(message.length() / 2).replace(" ", "");
 //        System.out.println(L + "\t" + R);
 //        System.out.println("key :\t" + keys[0]);
 //        System.out.println(roundFunction(R, keys[1]));
 //        System.out.println(keys.length);
-        for (int i = 0; i < 16; i++) {
-            String temp = L;
-            L = R;
-            R = Binary.XOR(temp, roundFunction(R, keys[i])).replaceAll(" ", "");
+        switch (perform) {
+            case ENCRYPTION:
+                for (int i = 0; i < 16; i++) {
+                    String temp = L;
+                    L = R;
+                    R = Binary.XOR(temp, roundFunction(R, keys[i])).replaceAll(" ", "");
+                }
+                break;
+            case DECRYPTION:
+                for (int i = 0; i < 16; i++) {
+                    String temp = L;
+                    L = R;
+                    R = Binary.XOR(temp, roundFunction(R, keys[16 - i - 1])).replaceAll(" ", "");
+                }
+                break;
         }
+
         String ret = R + L;
-        System.out.println("Expected :\t10000101 11101000 00010011 01010100 00001111 00001010 10110100 00000101");
-        ret = applyPermutation(ret, F, permutation_F);
-        System.out.println("Result :\t" + ret);
-/*
-        for (int i = 0; i < ret.length(); i++) {
-            if (i % 8 == 0 && i != 0) {
-                System.out.print(" ");
-            }
-            System.out.print(ret.charAt(i));
+        ret = applyPermutation(ret, F, PERMUTATION.F);
+        return ret;
+    }
+
+    enum PERMUTATION {
+        IP(8),
+        E(6),
+        P(-1),
+        F(8);
+
+        private int numValue;
+
+        PERMUTATION(int i) {
+            this.numValue = i;
         }
-*/
+    }
+
+    enum DES {
+        ENCRYPTION,
+        DECRYPTION;
     }
 
 }

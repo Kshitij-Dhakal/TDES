@@ -41,6 +41,8 @@ public class KeyExpansion {
         String[] D = new String[17];
         binaryKeys = permutedChoice1(binaryKeys);
         C[0] = binaryKeys.substring(0, binaryKeys.length() / 2);
+        //TODO D[0] should take substring(binaryKeys.length()/2+1) but will throw error and is working correctly as it is
+        //this works because the binary stream is space separated
         D[0] = binaryKeys.substring(binaryKeys.length() / 2);
         for (int i = 1; i < 17; i++) {
             C[i] = Binary.leftShift(C[i - 1], leftShift[i]);
