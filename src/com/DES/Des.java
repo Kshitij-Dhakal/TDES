@@ -1,5 +1,7 @@
 package com.DES;
 
+import java.util.List;
+
 public class Des {
 	// All the following constants for permutation have index starting from 1..n
 	// instead of 0..n-1
@@ -129,24 +131,28 @@ public class Des {
 
 	public static void main(String[] args) {
 		PERFORM perform = PERFORM.ENCRYPTION;
-		String m = "00000001 00100011 01000101 01100111 10001001 10101011 11001101 11101111";
+		String message = "00000001 00100011 01000101 01100111 10001001 10101011 11001101 11101111";
 		// Encryption Function is independent of whether message is separated every 8
 		// bits by white space
 
 		String[] tdesKey = { KeyGenerator.getRandomKey(), KeyGenerator.getRandomKey() };
 
 		String key = "00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001";
+		String enc = "", dec = "";
+		message = "sweet but a psycho";
+		System.out.println(Binary.stringToBinary(message));
+		List<String> messageList = MessagePadding.addPadding64(message);
+		for (String s : messageList) {
+			enc += tdes(PERFORM.ENCRYPTION, s, tdesKey) + " ";
+		}
+		System.out.println(enc);
+		for (String s : MessagePadding.split64(enc)) {
+			dec += tdes(PERFORM.DECRYPTION, s, tdesKey) + " ";
+		}
+		System.out.println(dec);
+		System.out.println(Binary.binarytoString(dec));
 
 	}
-
-	/*
-	 * private static void performTdesCheck(PERFORM perform, String m, String[]
-	 * tdesKey) { String encryptedM = encrypt(perform, m, tdesKey[0]);
-	 * System.out.println("Encrypted :\t" + encryptedM); System.out.
-	 * println("Original :\t00000001 00100011 01000101 01100111 10001001 10101011 11001101 11101111"
-	 * ); System.out.println("Decrypted :\t" + encrypt(PERFORM.DECRYPTION,
-	 * encryptedM, tdesKey[0])); }
-	 */
 
 	/**
 	 * Triple-DES is just DES with two 64-bit keys applied. Given a plaintext
@@ -161,14 +167,19 @@ public class Des {
 	 * @param tdesKey
 	 * @return encrypted text
 	 */
-	public static String tdes(PERFORM perform, String message, String[] tdesKey) {
-		String encryptedM;
+	private static String tdes(PERFORM perform, String message, String[] tdesKey) {
+		String encryptedM = message;
 		if (perform == PERFORM.ENCRYPTION) {
-			encryptedM = encrypt(PERFORM.ENCRYPTION, tdesKey[0],
-					encrypt(PERFORM.DECRYPTION, tdesKey[1], encrypt(PERFORM.ENCRYPTION, tdesKey[0], message)));
+//			System.out.println("Encrypting");
+			encryptedM = encrypt(PERFORM.ENCRYPTION, encryptedM, tdesKey[0]);
+			encryptedM = encrypt(PERFORM.DECRYPTION, encryptedM, tdesKey[1]);
+			encryptedM = encrypt(PERFORM.ENCRYPTION, encryptedM, tdesKey[0]);
 		} else {
-			encryptedM = encrypt(PERFORM.DECRYPTION, tdesKey[0],
-					encrypt(PERFORM.ENCRYPTION, tdesKey[1], encrypt(PERFORM.DECRYPTION, tdesKey[0], message)));
+//			System.out.println("Decrypting");
+			encryptedM = encrypt(PERFORM.DECRYPTION, encryptedM, tdesKey[0]);
+			encryptedM = encrypt(PERFORM.ENCRYPTION, encryptedM, tdesKey[1]);
+			encryptedM = encrypt(PERFORM.DECRYPTION, encryptedM, tdesKey[0]);
+
 		}
 		return encryptedM;
 	}
@@ -208,7 +219,7 @@ public class Des {
 
 		String ret = R + L;
 		ret = applyPermutation(ret, F, PERMUTATION.F);
-		return ret;
+		return ret.trim();
 	}
 
 	private enum PERMUTATION {
@@ -221,7 +232,7 @@ public class Des {
 		}
 	}
 
-	public enum PERFORM {
+	private enum PERFORM {
 		ENCRYPTION, DECRYPTION
 	}
 

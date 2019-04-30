@@ -3,11 +3,11 @@ package com.DES;
 import java.util.Random;
 
 public class KeyGenerator {
-	public static void main(String[] args) {
-		String key = getRandomKey();
-		System.out.println(key);
-//		System.out.println(Integer.toBinaryString(127));
-	}
+	/*
+	 * public static void main(String[] args) { String key = getRandomKey();
+	 * System.out.println(key); // System.out.println(Integer.toBinaryString(127));
+	 * }
+	 */
 
 	public static String getRandomKey() {
 		String key = "";
