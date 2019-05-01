@@ -1,5 +1,6 @@
 package com.DES;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Des {
@@ -129,29 +130,54 @@ public class Des {
 	 * ); System.out.println("Result :\t" + ret); }
 	 */
 
-	public static void main(String[] args) {
-		PERFORM perform = PERFORM.ENCRYPTION;
-		String message = "00000001 00100011 01000101 01100111 10001001 10101011 11001101 11101111";
-		// Encryption Function is independent of whether message is separated every 8
-		// bits by white space
+	
+	/*
+	 * public static void main(String[] args) { String message; String[] tdesKey = {
+	 * KeyGenerator.getRandomKey(), KeyGenerator.getRandomKey() }; String key =
+	 * "00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001";
+	 * message = "Hello World";
+	 * 
+	 * { String enc = encrypt(tdesKey, message); System.out.println("Encrypted :\t"
+	 * + Binary.binaryToHex(enc)); String dec = decrypt(tdesKey, enc);
+	 * System.out.println("Original :\t" +
+	 * Binary.binaryToHex(Binary.stringToBinary(message)));
+	 * System.out.println("Decrypted :\t" + Binary.binaryToHex(dec));
+	 * System.out.println("Decrypted :\t" +
+	 * Binary.binarytoString(Binary.hexToBinary(Binary.binaryToHex(dec))));
+	 * System.out.println("Message :\t" + Binary.binarytoString(dec).trim()); }
+	 * 
+	 * }
+	 */
+	 
 
-		String[] tdesKey = { KeyGenerator.getRandomKey(), KeyGenerator.getRandomKey() };
-
-		String key = "00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001";
-		String enc = "", dec = "";
-		message = "sweet but a psycho";
-		System.out.println(Binary.stringToBinary(message));
-		List<String> messageList = MessagePadding.addPadding64(message);
-		for (String s : messageList) {
-			enc += tdes(PERFORM.ENCRYPTION, s, tdesKey) + " ";
+	/**
+	 * Use TDES algorithm to decrypt message using key[2]
+	 * 
+	 * @param key
+	 * @param message
+	 * @return decrypted string
+	 */
+	public static String decrypt(String[] key, String message) {
+		String dec = "";
+		for (String s : MessagePadding.split64(message)) {
+			dec += tdes(PERFORM.DECRYPTION, s, key) + " ";
 		}
-		System.out.println(enc);
-		for (String s : MessagePadding.split64(enc)) {
-			dec += tdes(PERFORM.DECRYPTION, s, tdesKey) + " ";
-		}
-		System.out.println(dec);
-		System.out.println(Binary.binarytoString(dec));
+		return dec;
+	}
 
+	/**
+	 * Use TDES algorithm to encrypt message using key[2]
+	 * 
+	 * @param key
+	 * @param message
+	 * @return encrypted string
+	 */
+	public static String encrypt(String[] key, String message) {
+		String enc = "";
+		for (String s : MessagePadding.addPadding64(message)) {
+			enc += tdes(PERFORM.ENCRYPTION, s, key) + " ";
+		}
+		return enc;
 	}
 
 	/**
@@ -171,14 +197,14 @@ public class Des {
 		String encryptedM = message;
 		if (perform == PERFORM.ENCRYPTION) {
 //			System.out.println("Encrypting");
-			encryptedM = encrypt(PERFORM.ENCRYPTION, encryptedM, tdesKey[0]);
-			encryptedM = encrypt(PERFORM.DECRYPTION, encryptedM, tdesKey[1]);
-			encryptedM = encrypt(PERFORM.ENCRYPTION, encryptedM, tdesKey[0]);
+			encryptedM = des(PERFORM.ENCRYPTION, encryptedM, tdesKey[0]);
+			encryptedM = des(PERFORM.DECRYPTION, encryptedM, tdesKey[1]);
+			encryptedM = des(PERFORM.ENCRYPTION, encryptedM, tdesKey[0]);
 		} else {
 //			System.out.println("Decrypting");
-			encryptedM = encrypt(PERFORM.DECRYPTION, encryptedM, tdesKey[0]);
-			encryptedM = encrypt(PERFORM.ENCRYPTION, encryptedM, tdesKey[1]);
-			encryptedM = encrypt(PERFORM.DECRYPTION, encryptedM, tdesKey[0]);
+			encryptedM = des(PERFORM.DECRYPTION, encryptedM, tdesKey[0]);
+			encryptedM = des(PERFORM.ENCRYPTION, encryptedM, tdesKey[1]);
+			encryptedM = des(PERFORM.DECRYPTION, encryptedM, tdesKey[0]);
 
 		}
 		return encryptedM;
@@ -192,7 +218,9 @@ public class Des {
 	 * @param binaryKey 64 bit Binary Key
 	 * @return Encrypted or Decrypted message using provided keys
 	 */
-	private static String encrypt(PERFORM perform, String message, String binaryKey) {
+	private static String des(PERFORM perform, String message, String binaryKey) {
+		// Encryption Function is independent of whether message is separated every 8
+		// bits by white space
 		// Applying Initial Permutation
 		String[] keys = KeyExpansion.expandKeys(binaryKey);
 		message = applyPermutation(message, IP, PERMUTATION.IP);
@@ -222,6 +250,9 @@ public class Des {
 		return ret.trim();
 	}
 
+	/**
+	 * This is lookup variables for applyPermutation function
+	 */
 	private enum PERMUTATION {
 		IP(8), E(6), P(-1), F(8);
 
@@ -234,6 +265,177 @@ public class Des {
 
 	private enum PERFORM {
 		ENCRYPTION, DECRYPTION
+	}
+
+	/**
+	 * Helper Class for DES.
+	 * 
+	 * @author dhaka
+	 *
+	 */
+	private static class MessagePadding {
+
+		/*
+		 * public static void main(String[] args) {
+		 * 
+		 * String message = "Sweet but a psycho"; List<String> paddedMessage =
+		 * addPadding64(message); for (String s : paddedMessage) {
+		 * System.out.println(s); }
+		 * 
+		 * System.out.println(Binary.binarytoString(binaryMessage).trim()); }
+		 */
+
+		/**
+		 * @param message
+		 * @return
+		 */
+		public static List<String> addPadding64(String message) {
+			// If ever need arise to add header for message padding
+			/*
+			 * int length = message.length(); message = Integer.toString(message.length() %
+			 * 8 + 1) + message;
+			 */
+//			System.out.println(message);
+			String binaryMessage = Binary.stringToBinary(message);
+			while ((binaryMessage.replace(" ", "")).length() % 64 != 0) {
+				binaryMessage += "0";
+				if ((binaryMessage.replace(" ", "")).length() % 8 == 0
+						&& (binaryMessage.replace(" ", "")).length() % 64 != 0)
+					binaryMessage += " ";
+//				System.out.println(binaryMessage);
+			}
+
+			List<String> paddedMessage = split64(binaryMessage);
+			return paddedMessage;
+		}
+
+		/**
+		 * @param binaryMessage
+		 * @return
+		 */
+		public static List<String> split64(String binaryMessage) {
+			int count = 0;
+			List<String> paddedMessage = new ArrayList<String>();
+			String foo = "";
+			for (String byteString : binaryMessage.split(" ")) {
+//				System.out.println(byteString);
+				foo += byteString + " ";
+//				System.out.print(foo);
+//				System.out.println(count);
+				if ((++count) == 8) {
+					paddedMessage.add(foo.trim());
+//					System.out.println();
+					count = 0;
+					foo = "";
+				}
+			}
+//			System.out.println("end");
+			return paddedMessage;
+		}
+
+	}
+
+	/**
+	 * Helper class for DES
+	 * 
+	 * @author dhaka
+	 *
+	 */
+	private static class KeyExpansion {
+		private static final int[] leftShift = { 0, 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1 };
+		// Index of pc1 begins at 1 and end at 64
+		// Each number in pc1 indicates the index of new bit in keys which will replace
+		// current bit.
+		private static final int[][] pc1 = { { 57, 49, 41, 33, 25, 17, 9 }, { 1, 58, 50, 42, 34, 26, 18 },
+				{ 10, 2, 59, 51, 43, 35, 27 }, { 19, 11, 3, 60, 52, 44, 36 }, { 63, 55, 47, 39, 31, 23, 15 },
+				{ 7, 62, 54, 46, 38, 30, 22 }, { 14, 6, 61, 53, 45, 37, 29 }, { 21, 13, 5, 28, 20, 12, 4 } };
+		private static final int[] pc2 = { 14, 17, 11, 24, 1, 5, 3, 28, 15, 6, 21, 10, 23, 19, 12, 4, 26, 8, 16, 7, 27,
+				20, 13, 2, 41, 52, 31, 37, 47, 55, 30, 40, 51, 45, 33, 48, 44, 49, 39, 56, 34, 53, 46, 42, 50, 36, 29,
+				32 };
+
+		/*
+		 * private static final int[][] pc2 = {{14, 17, 11, 24, 1, 5}, {3, 28, 15, 6,
+		 * 21, 10}, {23, 19, 12, 4, 26, 8}, {16, 7, 27, 20, 13, 2}, {41, 52, 31, 37, 47,
+		 * 55}, {30, 40, 51, 45, 33, 48}, {44, 49, 39, 56, 34, 53}, {46, 42, 50, 36, 29,
+		 * 32}};
+		 */
+		private static String[] expandedKeys = new String[16];
+
+		public static String[] expandKeys(String binaryKeys) {
+//	        checkPC1();
+//	        binaryKeys = "00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001";
+			String[] C = new String[17];
+			String[] D = new String[17];
+			binaryKeys = permutedChoice1(binaryKeys);
+			C[0] = binaryKeys.substring(0, binaryKeys.length() / 2);
+			// D[0] should take substring(binaryKeys.length()/2+1) but will throw error and
+			// is working correctly as it is
+			// this works because the binary stream is space separated
+			D[0] = binaryKeys.substring(binaryKeys.length() / 2);
+			for (int i = 1; i < 17; i++) {
+				C[i] = Binary.leftShift(C[i - 1], leftShift[i]);
+				D[i] = Binary.leftShift(D[i - 1], leftShift[i]);
+			}
+			permutedChoice2(C, D);
+			/*
+			 * for (int i = 0; i < 16; i++) { System.out.println("K" + (i + 1) + "\t=\t" +
+			 * expandedKeys[i]); }
+			 */
+			return expandedKeys;
+		}
+
+		private static void permutedChoice2(String[] c, String[] d) {
+			for (int i = 0; i < 16; i++) {
+				// C0 and D0 are initial values and therefore aren't used
+				String tempKey = (c[i + 1] + d[i + 1]).replaceAll(" ", "");
+				String val = "";
+				for (int j = 0; j < pc2.length; j++) {
+					val += tempKey.charAt(pc2[j] - 1);
+				}
+				expandedKeys[i] = val;
+			}
+		}
+
+		/*
+		 * private static void checkPC1() { String binaryKeys =
+		 * "00010011 00110100 01010111 01111001 10011011 10111100 11011111 11110001";
+		 * binaryKeys = permutedChoice1(binaryKeys); //check if PC1 is working correctly
+		 * System.out.
+		 * println("1111000 0110011 0010101 0101111 0101010 1011001 1001111 0001111");
+		 * System.out.println(binaryKeys); System.out.println(binaryKeys.
+		 * equals("1111000 0110011 0010101 0101111 0101010 1011001 1001111 0001111")); }
+		 */
+
+		/*
+		 * public static String[] permutedChoice1(String[] keys) { //Index of pc1 begins
+		 * at 1 and end at 64 int[][] pc1 = {{57, 49, 41, 33, 25, 17, 9}, {1, 58, 50,
+		 * 42, 34, 26, 18}, {10, 2, 59, 51, 43, 35, 27}, {19, 11, 3, 60, 52, 44, 36},
+		 * {63, 55, 47, 39, 31, 23, 15}, {7, 62, 54, 46, 38, 30, 22}, {14, 6, 61, 53,
+		 * 45, 37, 29}, {21, 13, 5, 28, 20, 12, 4}}; String ret = ""; for (int i = 0; i
+		 * < 8; i++) { for (int j = 0; j < 7; j++) { int newi = (pc1[i][j]-1) / 8; int
+		 * newj = (pc1[i][j]-1) % 8; ret += keys[newi].charAt(newj); } ret += " "; } ret
+		 * = ret.substring(0,ret.length()-1); return ret.split(" "); }
+		 */
+
+		/**
+		 * PC1 according to DES standards
+		 *
+		 * @param keys Binary stream of keys of 64 bit length
+		 * @return new stream of binary keys after applying PC1 of 56 bit length
+		 */
+		private static String permutedChoice1(String keys) {
+			String ret = "";
+			keys = keys.replaceAll(" ", "");
+			for (int i = 0; i < 8; i++) {
+				for (int j = 0; j < 7; j++) {
+					ret += keys.charAt(pc1[i][j] - 1);
+				}
+				ret += " ";
+			}
+//	        return ret.substring(0,ret.length()-1);
+			return ret;
+		}
+
 	}
 
 }
