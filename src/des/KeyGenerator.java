@@ -50,20 +50,23 @@ public class KeyGenerator {
         bob.receive(Ka);
         System.out.println("Key received by Alice : " + alice.key);
         System.out.println("Key received by Alice : " + bob.key);
-        System.out.println(alice.key.bitLength());
-
+        System.out.println(alice.getKey());
+        System.out.println(alice.getKey().bitLength());
+//        System.out.println(alice.dh.Xa);
+//        System.out.println(alice.key.bitLength());
+//        System.out.println(Math.pow(2,128));
 
     }
 
     public BigInteger getKey() {
-        return key.mod((new BigInteger("2")).pow(128));
+        return key.mod(new BigInteger("2").pow(128));
     }
 
     public String initializeDHKeyExchange() {
-        return dh.G.pow(dh.Xa).mod(dh.P).toString(16);
+        return dh.G.modPow(dh.Xa, dh.P).toString(16);
     }
 
     public void receive(String Ka) {
-        this.key = (new BigInteger(Ka, 16)).pow(dh.Xa).mod(dh.P).mod((new BigInteger("2")).pow(128));
+        this.key = (new BigInteger(Ka, 16)).modPow(dh.Xa, dh.P);
     }
 }
