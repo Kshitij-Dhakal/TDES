@@ -154,10 +154,10 @@ public class Des {
         System.out.println("Original message :\t\t\t\t" + message);
         System.out.println("Original message (in hex) :\t\t" + Binary.binaryToHex(Binary.stringToBinary(message)));
         message = encrypt(new BigInteger("152253330435064732688786924318745985200"), message);
-        System.out.println("Encrypted message (in hex) :\t" + Binary.binaryToHex(message));
+        System.out.println("Encrypted message (in hex) :\t" + message);
         message = decrypt(new BigInteger("152253330435064732688786924318745985200"), message);
-        System.out.println("Decrypted message (in hex) :\t" + Binary.binaryToHex(message));
-        System.out.printf("Decrypted message :\t\t\t\t" + Binary.binarytoString(message));
+//        System.out.println("Decrypted message (in hex) :\t" + Binary.binaryToHex(message));
+        System.out.printf("Decrypted message :\t\t\t\t" + message);
     }
 
 
@@ -169,11 +169,13 @@ public class Des {
      * @return decrypted string
      */
     public static String decrypt(BigInteger key, String message) {
+        message = Binary.hexToBinary(message);
         String dec = "";
         for (String s : MessagePadding.split64(message)) {
             dec += tdes(PERFORM.DECRYPTION, s, KeyGenerator.generateBinaryKey(key)) + " ";
         }
-        return dec;
+//        return dec;
+        return Binary.binarytoString(dec);
     }
 
     /**
@@ -188,7 +190,7 @@ public class Des {
         for (String s : MessagePadding.addPadding64(message)) {
             enc += tdes(PERFORM.ENCRYPTION, s, KeyGenerator.generateBinaryKey(key)) + " ";
         }
-        return enc;
+        return Binary.binaryToHex(enc);
     }
 
     /**
