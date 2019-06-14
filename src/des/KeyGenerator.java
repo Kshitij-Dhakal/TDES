@@ -63,10 +63,10 @@ public class KeyGenerator {
     }
 
     public String initializeDHKeyExchange() {
-        return dh.G.modPow(dh.Xa, dh.P).toString(16);
+        return DiffieHellman.G.modPow(dh.Xa, DiffieHellman.P).toString(16);
     }
 
     public void receive(String Ka) {
-        this.key = (new BigInteger(Ka, 16)).modPow(dh.Xa, dh.P);
+        this.key = (new BigInteger(Ka, 16)).modPow(dh.Xa, DiffieHellman.P);
     }
 }
