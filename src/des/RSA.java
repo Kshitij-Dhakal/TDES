@@ -35,19 +35,19 @@ public class RSA {
         progressWindow.setProgress(++progress, rsaMessage + "Generating prime numbers");
         do {
             p = BigInteger.probablePrime(512, new SecureRandom());
-        } while (p.gcd(e).equals(1));
+        } while (p.mod(e).equals(BigInteger.ONE));
         progressWindow.setProgress(++progress);
         do {
             q = BigInteger.probablePrime(512, new SecureRandom());
-        } while (p.gcd(e).equals(1));
+        } while (q.mod(e).equals(BigInteger.ONE));
         progressWindow.setProgress(++progress, rsaMessage + "Generating modulus");
         n = p.multiply(q);
         progressWindow.setProgress(++progress, rsaMessage + "Calculating totient");
         //phi = (p-1)(q-1)
-        BigInteger phi = (p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE));
+        BigInteger L = (p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE));
         progressWindow.setProgress(++progress, rsaMessage + "Generating private key");
         k = (new SecureRandom()).nextInt() & Integer.MAX_VALUE;
-        d = e.modInverse(phi);
+        d = e.modInverse(L);
         progressWindow.setProgress(++progress, rsaMessage + "Complete");
         progressWindow.dispose();
     }
@@ -71,20 +71,22 @@ public class RSA {
     }
 
     public static void main(String[] args) {
-        for (int i = 0; i < 10; i++) {
-            RSA aliceRsa = new RSA();
-            RSA bobRsa = new RSA();
-            KeyGenerator alice = new KeyGenerator();
-            KeyGenerator bob = new KeyGenerator();
-            String sign = aliceRsa.sign(new BigInteger(alice.initializeDHKeyExchange(), 16), bobRsa.getPublic_variable());
-            bobRsa.verify(sign, aliceRsa.getPublic_variable());
+        //FIXME inconsistency with encryption and decryption process
+        BigInteger plaintext = new BigInteger("7f9919e85ef4adf5baf3cff5431ca54f60149d4bde82164a112bf18e908638a47899f5f5384c51237bffb909f92813ba0452612ff3c5d067891240dedb6605c5db54f0cdc71ea1ddf81aa77c05051c77a3f3b60bb581feac4fc837d6b3c5e80d8daadd9e09dc0b3ab011c5a559096dca7f5ac38a91dab03c91e6aa0c4cdc8f76", 16);
+        System.out.println(plaintext.toString(16));
+        for (int i = 0; i < 100; i++) {
+            RSA alice = new RSA();
+            BigInteger decrypted = plaintext.modPow(alice.e, alice.n).modPow(alice.d, alice.n);
+            if (!decrypted.equals(plaintext)) {
+                System.out.println(i + " " + decrypted.toString(16));
+            }
         }
     }
 
     public String sign(BigInteger dh_key, BigInteger public_key) {
         BigInteger signature = getMd5(dh_key.toString(16));
-        signature = signature.mod(n).modPow(d, n);// signing process
-        System.out.println("Sent signature : " + signature.toString(16));
+        signature = signature.mod(n);
+        signature = signature.modPow(d, n);// signing process
         //encrypt
         dh_key = dh_key.modPow(e, public_key);
         signature = signature.modPow(e, public_key);
@@ -98,11 +100,10 @@ public class RSA {
         //decrypt
         dh_key = dh_key.modPow(d, n);
         signature = signature.modPow(d, n);
-        //FIXME after decryption signature inconsistently doesn't match sent signature
-        System.out.println("Received signature : " + signature.toString(16));
         signature = signature.modPow(e, public_key);
         BigInteger digest = getMd5(dh_key.toString(16));
-        if (digest.mod(public_key).equals(signature)) {
+        digest = digest.mod(public_key);
+        if (digest.equals(signature)) {
             System.out.println("Verified");
             return dh_key;
         }
