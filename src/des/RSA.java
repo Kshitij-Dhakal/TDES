@@ -28,7 +28,7 @@ public class RSA {
         d ← modinv(e, L)
         return (N,e,d)
     */
-    RSA() {
+    public RSA() {
         int progress = -1;
         String rsaMessage = "Initializing RSA : ";
         ProgressWindow progressWindow = new ProgressWindow(5);
@@ -84,10 +84,12 @@ public class RSA {
         //encrypt
         dh_key = dh_key.modPow(e, public_key);
         signature = signature.modPow(e, public_key);
+        System.out.println("Send signed key " + dh_key.toString(16) + " " + signature.toString(16));
         return dh_key.toString(16) + " " + signature.toString(16);
     }
 
     public BigInteger verify(String message, BigInteger public_key) {
+        System.out.println("Received signed key " + message);
         String[] s1 = message.split(" ");
         BigInteger dh_key = new BigInteger(s1[0], 16);
         BigInteger signature = new BigInteger(s1[1], 16);
@@ -99,10 +101,11 @@ public class RSA {
         if (digest.mod(public_key).equals(signature)) {
             return dh_key;
         }
+        System.err.println("Unable to verify signature");
         return null;
     }
 
-    private BigInteger getPublic_variable() {
+    public BigInteger getPublic_variable() {
         return this.n;
     }
 }
