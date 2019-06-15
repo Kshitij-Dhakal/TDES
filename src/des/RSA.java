@@ -71,34 +71,39 @@ public class RSA {
     }
 
     public static void main(String[] args) {
-        RSA alice = new RSA();
-        RSA bob = new RSA();
-        BigInteger enc = BigInteger.valueOf(1553);
-        String sign = alice.sign(enc, bob.getPublic_variable());
-        System.out.println(bob.verify(sign, alice.getPublic_variable()));
+        for (int i = 0; i < 10; i++) {
+            RSA aliceRsa = new RSA();
+            RSA bobRsa = new RSA();
+            KeyGenerator alice = new KeyGenerator();
+            KeyGenerator bob = new KeyGenerator();
+            String sign = aliceRsa.sign(new BigInteger(alice.initializeDHKeyExchange(), 16), bobRsa.getPublic_variable());
+            bobRsa.verify(sign, aliceRsa.getPublic_variable());
+        }
     }
 
     public String sign(BigInteger dh_key, BigInteger public_key) {
         BigInteger signature = getMd5(dh_key.toString(16));
         signature = signature.mod(n).modPow(d, n);// signing process
+        System.out.println("Sent signature : " + signature.toString(16));
         //encrypt
         dh_key = dh_key.modPow(e, public_key);
         signature = signature.modPow(e, public_key);
-        System.out.println("Send signed key " + dh_key.toString(16) + " " + signature.toString(16));
         return dh_key.toString(16) + " " + signature.toString(16);
     }
 
     public BigInteger verify(String message, BigInteger public_key) {
-        System.out.println("Received signed key " + message);
         String[] s1 = message.split(" ");
         BigInteger dh_key = new BigInteger(s1[0], 16);
         BigInteger signature = new BigInteger(s1[1], 16);
         //decrypt
         dh_key = dh_key.modPow(d, n);
         signature = signature.modPow(d, n);
+        //FIXME after decryption signature inconsistently doesn't match sent signature
+        System.out.println("Received signature : " + signature.toString(16));
         signature = signature.modPow(e, public_key);
         BigInteger digest = getMd5(dh_key.toString(16));
         if (digest.mod(public_key).equals(signature)) {
+            System.out.println("Verified");
             return dh_key;
         }
         System.err.println("Unable to verify signature");
