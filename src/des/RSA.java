@@ -34,11 +34,12 @@ public class RSA {
         ProgressWindow progressWindow = new ProgressWindow(5);
         progressWindow.setProgress(++progress, rsaMessage + "Generating prime numbers");
         do {
-            p = BigInteger.probablePrime(512, new SecureRandom());
+            //1024 bit necessary for working with DH. 512 bits gives inconsistent result.
+            p = BigInteger.probablePrime(1024, new SecureRandom());
         } while (p.mod(e).equals(BigInteger.ONE));
         progressWindow.setProgress(++progress);
         do {
-            q = BigInteger.probablePrime(512, new SecureRandom());
+            q = BigInteger.probablePrime(1024, new SecureRandom());
         } while (q.mod(e).equals(BigInteger.ONE));
         progressWindow.setProgress(++progress, rsaMessage + "Generating modulus");
         n = p.multiply(q);
@@ -58,7 +59,6 @@ public class RSA {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             md5.update(input.getBytes());
             digest = md5.digest();
-//            System.out.println(digest);
         } catch (NoSuchAlgorithmException ex) {
             ex.printStackTrace();
             return null;
@@ -71,25 +71,26 @@ public class RSA {
     }
 
     public static void main(String[] args) {
-        //FIXME inconsistency with encryption and decryption process
-        BigInteger plaintext = new BigInteger("7f9919e85ef4adf5baf3cff5431ca54f60149d4bde82164a112bf18e908638a47899f5f5384c51237bffb909f92813ba0452612ff3c5d067891240dedb6605c5db54f0cdc71ea1ddf81aa77c05051c77a3f3b60bb581feac4fc837d6b3c5e80d8daadd9e09dc0b3ab011c5a559096dca7f5ac38a91dab03c91e6aa0c4cdc8f76", 16);
-        System.out.println(plaintext.toString(16));
+        RSA aliceRsa = new RSA();
+        RSA bobRsa = new RSA();
+        long startTime = System.currentTimeMillis();
         for (int i = 0; i < 100; i++) {
-            RSA alice = new RSA();
-            BigInteger decrypted = plaintext.modPow(alice.e, alice.n).modPow(alice.d, alice.n);
-            if (!decrypted.equals(plaintext)) {
-                System.out.println(i + " " + decrypted.toString(16));
-            }
+            KeyGenerator alice = new KeyGenerator();
+            KeyGenerator bob = new KeyGenerator();
+            String sign = aliceRsa.sign(new BigInteger(alice.initializeDHKeyExchange(), 16), bobRsa.getPublic_variable());
+            bobRsa.verify(sign, aliceRsa.getPublic_variable());
         }
+        System.out.println("Time taken to verify 100 keys : " + ((System.currentTimeMillis() - startTime) / 1000) + " s");
     }
 
     public String sign(BigInteger dh_key, BigInteger public_key) {
         BigInteger signature = getMd5(dh_key.toString(16));
         signature = signature.mod(n);
-        signature = signature.modPow(d, n);// signing process
+        signature = signature.modPow(d, n);// signing process for authentication
         //encrypt
         dh_key = dh_key.modPow(e, public_key);
-        signature = signature.modPow(e, public_key);
+        //Encrypting signature is obsolete. Even after decrypting signature we will only be able to retrieve digest. Assuming that MD5 is cryptographically secure, it is impossible to retrieve key from digest.
+//        signature = signature.modPow(e, public_key);
         return dh_key.toString(16) + " " + signature.toString(16);
     }
 
@@ -99,12 +100,11 @@ public class RSA {
         BigInteger signature = new BigInteger(s1[1], 16);
         //decrypt
         dh_key = dh_key.modPow(d, n);
-        signature = signature.modPow(d, n);
+//        signature = signature.modPow(d, n);
         signature = signature.modPow(e, public_key);
         BigInteger digest = getMd5(dh_key.toString(16));
         digest = digest.mod(public_key);
         if (digest.equals(signature)) {
-            System.out.println("Verified");
             return dh_key;
         }
         System.err.println("Unable to verify signature");
