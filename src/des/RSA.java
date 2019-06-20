@@ -28,33 +28,31 @@ public class RSA {
         d ← modinv(e, L)
         return (N,e,d)
     */
-    public RSA() {
-        int progress = -1;
+    public RSA(ProgressWindow progressWindow) {
         String rsaMessage = "Initializing RSA : ";
-        ProgressWindow progressWindow = new ProgressWindow(5);
-        progressWindow.setProgress(++progress, rsaMessage + "Generating prime numbers");
+        progressWindow.setVisible(true);
+        progressWindow.addProgress(rsaMessage + "Generating prime numbers");
         do {
             //1024 bit necessary for working with DH. 512 bits gives inconsistent result.
             p = BigInteger.probablePrime(1024, new SecureRandom());
         } while (p.mod(e).equals(BigInteger.ONE));
-        progressWindow.setProgress(++progress);
+        progressWindow.addProgress();
         do {
             q = BigInteger.probablePrime(1024, new SecureRandom());
         } while (q.mod(e).equals(BigInteger.ONE));
-        progressWindow.setProgress(++progress, rsaMessage + "Generating modulus");
+        progressWindow.addProgress(rsaMessage + "Generating modulus");
         n = p.multiply(q);
-        progressWindow.setProgress(++progress, rsaMessage + "Calculating totient");
+        progressWindow.addProgress(rsaMessage + "Calculating totient");
         //phi = (p-1)(q-1)
         BigInteger L = (p.subtract(BigInteger.ONE)).multiply(q.subtract(BigInteger.ONE));
-        progressWindow.setProgress(++progress, rsaMessage + "Generating private key");
+        progressWindow.addProgress(rsaMessage + "Generating private key");
         k = (new SecureRandom()).nextInt() & Integer.MAX_VALUE;
         d = e.modInverse(L);
-        progressWindow.setProgress(++progress, rsaMessage + "Complete");
-        progressWindow.dispose();
+        progressWindow.addProgress(rsaMessage + "Complete"); //5 updates
     }
 
     static BigInteger getMd5(String input) {
-        byte[] digest = new byte[0];
+        byte[] digest;
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             md5.update(input.getBytes());
@@ -71,16 +69,6 @@ public class RSA {
     }
 
     public static void main(String[] args) {
-        RSA aliceRsa = new RSA();
-        RSA bobRsa = new RSA();
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < 100; i++) {
-            KeyGenerator alice = new KeyGenerator();
-            KeyGenerator bob = new KeyGenerator();
-            String sign = aliceRsa.sign(new BigInteger(alice.initializeDHKeyExchange(), 16), bobRsa.getPublic_variable());
-            bobRsa.verify(sign, aliceRsa.getPublic_variable());
-        }
-        System.out.println("Time taken to verify 100 keys : " + ((System.currentTimeMillis() - startTime) / 1000) + " s");
     }
 
     public String sign(BigInteger dh_key, BigInteger public_key) {
