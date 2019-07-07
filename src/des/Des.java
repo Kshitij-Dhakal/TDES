@@ -2,6 +2,9 @@ package des;
 
 import java.math.BigInteger;
 
+/**
+ * http://page.math.tu-berlin.de/~kant/teaching/hess/krypto-ws2006/des.htm
+ */
 public class Des {
     // All the following constants for permutation have index starting from 1..n
     // instead of 0..n-1

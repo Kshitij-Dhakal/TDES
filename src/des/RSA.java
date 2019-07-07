@@ -7,6 +7,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+import static dependencies.functions.SecureHash.getMd5;
+
+/**
+ * https://www.di-mgt.com.au/rsa_alg.html
+ */
 public class RSA {
     BigInteger p;
     BigInteger q;
@@ -51,22 +56,7 @@ public class RSA {
         progressWindow.addProgress(rsaMessage + "Complete"); //5 updates
     }
 
-    static BigInteger getMd5(String input) {
-        byte[] digest;
-        try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-            md5.update(input.getBytes());
-            digest = md5.digest();
-        } catch (NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < digest.length; i++) {
-            buffer.append(Integer.toHexString(0xFF & digest[i]));
-        }
-        return new BigInteger(buffer.toString(), 16);
-    }
+
 
     public static void main(String[] args) {
     }
