@@ -3,8 +3,6 @@ package des;
 import dependencies.UI.ProgressWindow;
 
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 import static dependencies.functions.SecureHash.getMd5;
@@ -55,7 +53,6 @@ public class RSA {
         d = e.modInverse(L);
         progressWindow.addProgress(rsaMessage + "Complete"); //5 updates
     }
-
 
 
     public static void main(String[] args) {
