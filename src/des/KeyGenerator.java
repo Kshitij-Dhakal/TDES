@@ -8,7 +8,6 @@ public class KeyGenerator {
     BigInteger key;
 
     public KeyGenerator() {
-        //TODO a user have only one private key for all connections. Check if this is less secure than having different private key for all connections.
         dh = new DiffieHellman();
     }
 
